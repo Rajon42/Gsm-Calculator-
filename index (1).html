@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>জিও শিট GSM ক্যালকুলেটর</title>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#eef2f4; --surface:#ffffff; --ink:#16252b; --muted:#5d6e75;
+  --line:#c9d4d9; --accent:#0f6b5c; --accent-ink:#ffffff; --result:#e3f1ee;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10191c; --surface:#18252a; --ink:#e6eef0; --muted:#93a5ac;
+    --line:#2d4047; --accent:#3cb8a2; --accent-ink:#08201b; --result:#17332e;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10191c; --surface:#18252a; --ink:#e6eef0; --muted:#93a5ac;
+  --line:#2d4047; --accent:#3cb8a2; --accent-ink:#08201b; --result:#17332e;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Hind Siliguri","Noto Sans Bengali","Kalpurush",system-ui,sans-serif;
+  line-height:1.5;min-height:100vh;display:flex;justify-content:center;padding:20px 16px}
+main{width:100%;max-width:440px}
+h1{font-size:1.5rem;margin:8px 0 4px}
+p.sub{margin:0 0 20px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px}
+label{display:block;font-weight:600;margin-bottom:6px}
+.field{margin-bottom:16px}
+.row{display:flex;gap:8px}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:8px;padding:12px;min-height:48px}
+select{width:auto;flex:0 0 96px}
+input:focus,select:focus,button:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.btns{display:flex;gap:8px}
+button{font:inherit;font-weight:600;border-radius:8px;min-height:48px;padding:0 18px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink)}
+button.primary{flex:1;background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.result{margin-top:20px;background:var(--result);border-radius:10px;padding:16px;text-align:center}
+.result .big{font-size:2.4rem;font-weight:700;color:var(--accent);line-height:1.2}
+.result .unit{font-size:1rem;font-weight:600}
+.result .detail{margin-top:8px;color:var(--muted);font-size:.95rem}
+.err{margin-top:16px;color:#b3261e;font-weight:600}
+@media (prefers-color-scheme: dark){.err{color:#ff8a80}}
+</style>
+</head>
+<body>
+<main>
+  <h1>জিও শিট GSM ক্যালকুলেটর</h1>
+  <p class="sub">ওজন, দৈর্ঘ্য ও প্রস্থ দিন, GSM নিজে থেকেই বের হবে।</p>
+  <div class="card">
+    <div class="field">
+      <label for="w">ওজন</label>
+      <div class="row">
+        <input id="w" type="number" inputmode="decimal" min="0" step="any" placeholder="যেমন 41.6">
+        <select id="wu" aria-label="ওজনের একক"><option value="1000">kg</option><option value="1">গ্রাম</option></select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="l">দৈর্ঘ্য (মিটার)</label>
+      <input id="l" type="number" inputmode="decimal" min="0" step="any" placeholder="যেমন 104">
+    </div>
+    <div class="field">
+      <label for="wd">প্রস্থ (মিটার)</label>
+      <input id="wd" type="number" inputmode="decimal" min="0" step="any" placeholder="যেমন 1">
+    </div>
+    <div class="btns">
+      <button class="primary" id="calc" type="button">GSM বের করুন</button>
+      <button id="clear" type="button">মুছুন</button>
+    </div>
+    <div id="out" aria-live="polite"></div>
+  </div>
+</main>
+<script>
+(function(){
+  var w=document.getElementById('w'),wu=document.getElementById('wu'),
+      l=document.getElementById('l'),wd=document.getElementById('wd'),
+      out=document.getElementById('out');
+  function bn(n){
+    var d='০১২৩৪৫৬৭৮৯';
+    return String(n).replace(/[0-9]/g,function(c){return d[c]});
+  }
+  function fmt(n,p){return bn(parseFloat(n.toFixed(p)))}
+  function calc(){
+    var wv=parseFloat(w.value),lv=parseFloat(l.value),dv=parseFloat(wd.value);
+    if(!w.value&&!l.value&&!wd.value){out.innerHTML='';return}
+    if(isNaN(wv)||isNaN(lv)||isNaN(dv)){
+      out.innerHTML='<div class="err">তিনটি ঘরেই সংখ্যা দিন।</div>';return}
+    if(wv<=0||lv<=0||dv<=0){
+      out.innerHTML='<div class="err">সব মান শূন্যের চেয়ে বেশি হতে হবে।</div>';return}
+    var grams=wv*parseFloat(wu.value),area=lv*dv,gsm=grams/area;
+    out.innerHTML='<div class="result"><div class="big">'+fmt(gsm,2)+
+      ' <span class="unit">GSM</span></div><div class="detail">ওজন '+
+      fmt(grams,2)+' গ্রাম ÷ ক্ষেত্রফল '+fmt(area,2)+' বর্গমিটার</div></div>';
+  }
+  document.getElementById('calc').addEventListener('click',calc);
+  [w,l,wd,wu].forEach(function(e){e.addEventListener('input',calc)});
+  document.getElementById('clear').addEventListener('click',function(){
+    w.value='';l.value='';wd.value='';out.innerHTML='';w.focus();
+  });
+})();
+</script>
+</body>
+</html>
